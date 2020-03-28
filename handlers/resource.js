@@ -31,7 +31,7 @@ async function getResource({
   // assume a redirect and create a similar redirect.
   if (response.headers.has('Location')) {
     const requestURL = new URL(request.url);
-    const redirectURL = new URL(response.headers.get('Location'));
+    const redirectURL = new URL(response.headers.get('Location'), response.url);
     const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
     const relative = redirectPath === '/' ? `/${redirectURL.host}` : `/${redirectURL.host}/${encode(redirectPath.substr(1))}`;
     return new Response(undefined, {
