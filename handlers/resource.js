@@ -32,14 +32,13 @@ async function getResource({
   if (response.headers.has('Location')) {
     const requestURL = new URL(request.url);
     const redirectURL = new URL(response.headers.get('Location'));
-    const redirectPath = redirectURL.pathname === '/'
-      ? `/${redirectURL.host}`
-      : `/${redirectURL.host}/${encode(redirectURL.pathname.substr(1))}`;
+    const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
+    const relative = redirectPath === '/' ? `/${redirectURL.host}` : `/${redirectURL.host}/${encode(redirectPath.substr(1))}`;
     return new Response(undefined, {
       status: response.status,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        Location: (new URL(`/api/${redirectPath.substr(1)}`, requestURL.origin)).toString(),
+        Location: (new URL(`/api/${relative.substr(1)}`, requestURL.origin)).toString(),
       },
     });
   }
