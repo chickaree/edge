@@ -11,12 +11,15 @@ async function getResource({
   const path = hash ? `/${decode(hash)}` : '/';
   const url = new URL(path, `https://${domain}`);
 
-  // @TODO Forward more headers! (but probably not Cookie)
+  // Forward a white list of headers (Do not forward Cookie)
   const response = await fetch(url.toString(), {
     redirect: 'manual',
     headers: {
+      Referer: request.headers.get('Referer'),
+      Origin: request.headers.get('Origin'),
       'User-Agent': request.headers.get('User-Agent'),
       Accept: request.headers.get('Accept'),
+      'Accept-Encoding': request.headers.get('Accept-Encoding'),
       'Accept-Language': request.headers.get('Accept-Language'),
     },
     cf: {
