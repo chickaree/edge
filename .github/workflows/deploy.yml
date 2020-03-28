@@ -1,0 +1,21 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+    - run: npm install
+    - run: npm test
+    - uses: cloudflare/wrangler-action@1.0.0
+      with:
+        apiToken: ${{ secrets.CF_API_TOKEN }}
+

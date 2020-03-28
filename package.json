@@ -1,0 +1,26 @@
+{
+  "name": "@chickaree/api",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "deploy": "wrangler publish",
+    "preview": "wrangler preview",
+    "watch": "nodemon --watch './*' --ignore 'worker/*' --ignore 'dist/*' --exec 'wrangler build && cloudworker -d worker/script.js'",
+    "test": "eslint ."
+  },
+  "devDependencies": {
+    "@cloudflare/wrangler": "^1.8.3",
+    "@dollarshaveclub/cloudworker": "^0.1.2",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.19.0",
+    "nodemon": "^2.0.2"
+  },
+  "dependencies": {
+    "base64url": "^3.0.1",
+    "service-worker-router": "^1.7.5"
+  }
+}

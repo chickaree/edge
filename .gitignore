@@ -1,0 +1,6 @@
+/target
+/dist
+bin/
+pkg/
+worker/
+node_modules/
