@@ -11,7 +11,7 @@ async function getResource({
   const path = hash ? `/${decode(hash)}` : '/';
   const url = new URL(path, `https://${domain}`);
 
-  // @TODO Forward more headers!
+  // @TODO Forward more headers! (but probably not Cookie)
   const response = await fetch(url.toString(), {
     redirect: 'manual',
     headers: {
@@ -35,12 +35,20 @@ async function getResource({
     return new Response(undefined, {
       status: response.status,
       headers: {
+        'Access-Control-Allow-Origin': '*',
         Location: (new URL(`/api/${redirectPath.substr(1)}`, requestURL.origin)).toString(),
       },
     });
   }
 
-  return response;
+  // Remove headers from the repsonse (especially Set-Cookie).
+  return new Response(response.body, {
+    status: response.status,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': response.headers.get('Content-Type'),
+    },
+  });
 }
 
 export default getResource;
