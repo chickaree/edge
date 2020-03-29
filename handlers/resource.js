@@ -47,19 +47,20 @@ async function getResource({
     const redirectURL = new URL(response.headers.get('Location'), response.url);
     const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
     const relative = redirectPath === '/' ? `/${redirectURL.host}` : `/${redirectURL.host}/${encode(redirectPath.substr(1))}`;
-    const locaitonURL = new URL(`/api/${relative.substr(1)}`, requestURL.origin);
+    const locationURL = new URL(`/api/${relative.substr(1)}`, requestURL.origin);
 
     // If we aren't redirecting anywhere, throw an error instead.
-    if (requestURL.toString() === locaitonURL.toString()) {
+    if (requestURL.toString() === locationURL.toString()) {
       return new Response(undefined, {
         status: 502,
         headers: {
           'X-Debug-Err': 'Circular Redirect',
+          'X-Debug-Location': response.headers.get('Location'),
         },
       });
     }
 
-    return Response.redirect(locaitonURL.toString(), response.status);
+    return Response.redirect(locationURL.toString(), response.status);
   }
 
   // Remove headers from the repsonse (especially Set-Cookie).
