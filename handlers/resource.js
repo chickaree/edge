@@ -12,7 +12,7 @@ async function getResource({
   const url = new URL(path, `https://${domain}`);
 
   // Forward a white list of headers (Do not forward Cookie)
-  const response = await fetch(url.toString(), {
+  const options = {
     redirect: 'manual',
     headers: {
       Referer: request.headers.get('Referer'),
@@ -25,7 +25,20 @@ async function getResource({
     cf: {
       cacheEverything: true,
     },
-  });
+  };
+
+  // Forward a white list of headers (Do not forward Cookie)
+  let response;
+  try {
+    response = await fetch(url.toString(), options);
+    if (!response.ok) {
+      throw new Error('Response Failed');
+    }
+  } catch (e) {
+    // Try again with http.
+    url.protocol = 'http:';
+    response = await fetch(url.toString(), options);
+  }
 
   // If the server responded with a Location header,
   // assume a redirect and create a similar redirect.
@@ -34,11 +47,23 @@ async function getResource({
     const redirectURL = new URL(response.headers.get('Location'), response.url);
     const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
     const relative = redirectPath === '/' ? `/${redirectURL.host}` : `/${redirectURL.host}/${encode(redirectPath.substr(1))}`;
+    const locaitonURL = new URL(`/api/${relative.substr(1)}`, requestURL.origin);
+
+    // If we aren't redirecting anywhere, throw an error instead.
+    if (requestURL.toString() === locaitonURL.toString()) {
+      return new Response(undefined, {
+        status: 502,
+        headers: {
+          'X-Debug-Err': 'Circular Redirect',
+        },
+      });
+    }
+
     return new Response(undefined, {
       status: response.status,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        Location: (new URL(`/api/${relative.substr(1)}`, requestURL.origin)).toString(),
+        Location: locaitonURL.toString(),
       },
     });
   }
