@@ -59,13 +59,7 @@ async function getResource({
       });
     }
 
-    return new Response(undefined, {
-      status: response.status,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        Location: locaitonURL.toString(),
-      },
-    });
+    return Response.redirect(locaitonURL.toString(), response.status);
   }
 
   // Remove headers from the repsonse (especially Set-Cookie).

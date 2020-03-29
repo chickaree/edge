@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "deploy": "wrangler publish",
-    "preview": "wrangler preview",
+    "preview": "wrangler preview --watch",
     "watch": "nodemon --watch './*' --ignore 'worker/*' --ignore 'dist/*' --exec 'wrangler build && cloudworker -d worker/script.js'",
     "test": "eslint ."
   },
