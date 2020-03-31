@@ -31,18 +31,20 @@ async function getResource({
   let response;
   try {
     response = await fetch(url.toString(), options);
-    if (!response.ok) {
-      throw new Error('Response Failed');
-    }
   } catch (e) {
     // Try again with http.
     url.protocol = 'http:';
     response = await fetch(url.toString(), options);
   }
 
-  // If the server responded with a Location header,
-  // assume a redirect and create a similar redirect.
-  if (response.headers.has('Location')) {
+  if (!response.ok && !response.headers.has('Location')) {
+    // Try again with http.
+    url.protocol = 'http:';
+    response = await fetch(url.toString(), options);
+  }
+
+  // Redirect?
+  if (response.status >= 301 && response.status <= 308 && response.headers.has('Location')) {
     const requestURL = new URL(request.url);
     const redirectURL = new URL(response.headers.get('Location'), response.url);
     const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
