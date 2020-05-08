@@ -4,10 +4,6 @@ import nextHandler from './handlers/next';
 
 const router = new Router();
 
-// Deprecated /api
-router.get('/api/:domain/:hash', getResource);
-router.get('/api/:domain', getResource);
-
 router.get('/proxy/:domain/:hash', getResource);
 router.get('/proxy/:domain', getResource);
 router.get('*', nextHandler);
