@@ -13,11 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1.4.2
-      with:
-        registry-url: 'https://npm.pkg.github.com/chickaree'
-    - run: npm install --ignore-scripts
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+    - run: npm install
     - run: npm test
     - uses: cloudflare/wrangler-action@1.1.0
       with:
