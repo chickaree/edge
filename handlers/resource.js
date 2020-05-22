@@ -49,13 +49,16 @@ async function getResource({
     const redirectURL = new URL(response.headers.get('Location'), response.url);
     const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
     const relative = redirectPath === '/' ? `/${redirectURL.host}` : `/${redirectURL.host}/${encode(redirectPath.substr(1))}`;
-    const locationURL = new URL(`/api/${relative.substr(1)}`, requestURL.origin);
+    const locationBaseURL = requestURL.pathname.startsWith('/proxy/') ? new URL('/proxy/', requestURL.origin) : new URL(requestURL.origin);
+    const locationURL = new URL(relative.substr(1), locationBaseURL);
 
     // If we aren't redirecting anywhere, throw an error instead.
     if (requestURL.toString() === locationURL.toString()) {
       return new Response(undefined, {
         status: 502,
         headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Location': response.url,
           'X-Debug-Err': 'Circular Redirect',
           'X-Debug-Location': response.headers.get('Location'),
         },
@@ -73,9 +76,10 @@ async function getResource({
 
   // Remove headers from the repsonse (especially Set-Cookie).
   return new Response(response.body, {
-    status: response.status,
+    ...response,
     headers: {
       'Access-Control-Allow-Origin': '*',
+      'Content-Location': response.url,
       'Content-Type': response.headers.get('Content-Type'),
     },
   });
