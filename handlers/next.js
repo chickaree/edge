@@ -1,6 +1,8 @@
 import { Router } from 'service-worker-router';
 import { getAsset } from '@cinematix/next-cloudflare';
-import { routesManifest, MIME_TYPES, getResponseDataJson } from '@chickaree/web';
+import {
+  routesManifest, MIME_TYPES, getResponseDataJson, getResourceMetadata,
+} from '@chickaree/web';
 import getResource from './resource';
 
 // Instantiate a new router for sub requests.
@@ -75,15 +77,11 @@ async function nextHandler({ event, request, url }) {
         data = await parsedResponse.json();
       }
 
-      // @TODO Send all other supported mime types to the API.
-
       if (!data) {
         return asset;
       }
 
-      // @TODO Transform into schema.org markup. (which I guess should be part of the app?)
-
-      // @TODO Create a util in the app to get a page title and og type from a resource. in fact I wonder if we should create a funciton that returns a map... then generate the query selector based on that map?
+      const { title, og, schema } = getResourceMetadata(data);
 
       // eslint-disable-next-line no-undef
       return (new HTMLRewriter()).on('head', {
@@ -96,23 +94,51 @@ async function nextHandler({ event, request, url }) {
             html: true,
           });
         },
-      }).on('meta[property="og:title"]', {
-        element(element) {
-          if (data.name) {
-            element.setAttribute('content', data.name);
-          }
-        },
-      }).on('meta[property="og:description"]', {
-        element(element) {
-          if (data.summary) {
-            element.setAttribute('content', data.summary);
-          }
-        },
       })
+        .on('script[type="application/ld+json"]', {
+          element(element) {
+            element.setInnerContent(JSON.stringify(schema));
+          },
+        })
+        .on('title', {
+          element(element) {
+            if (title) {
+              element.setInnerContent(title);
+            }
+          },
+        })
+        .on('meta[property="og:title"]', {
+          element(element) {
+            if (og.title) {
+              element.setAttribute('content', og.title);
+            }
+          },
+        })
+        .on('meta[property="og:description"]', {
+          element(element) {
+            if (og.description) {
+              element.setAttribute('content', og.description);
+            }
+          },
+        })
         .on('meta[property="og:image"]', {
           element(element) {
-            if (data.image && data.image.href) {
-              element.setAttribute('content', data.image.href);
+            if (og.image) {
+              element.setAttribute('content', og.image);
+            }
+          },
+        })
+        .on('meta[property="og:type"]', {
+          element(element) {
+            if (og.type) {
+              element.setAttribute('content', og.type);
+            }
+          },
+        })
+        .on('meta[property="og:url"]', {
+          element(element) {
+            if (og.url) {
+              element.setAttribute('content', og.url);
             }
           },
         })
