@@ -86,10 +86,12 @@ async function nextHandler({ event, request, url }) {
       // eslint-disable-next-line no-undef
       return (new HTMLRewriter()).on('head', {
         element(element) {
-          // @TODO Maybe a data-route attribute should be added... then the next app could listen for route changes
-          //       query for all `head script[data-route]` elements. If the route no longer matches, it could remove the element
-          //       if it does still match it will leave it, an id (or maybe data-prop ?) will indicate the property name. to pass as a page prop.
-          //       this assumes that the custom app _already_ renders on route change (I assume it does...)
+          // @TODO Maybe a data-route attribute should be added... then the next app could listen
+          //       for route changes query for all `head script[data-route]` elements. If the route
+          //       no longer matches, it could remove the element if it does still match it will
+          //       leave it, an id (or maybe data-prop ?) will indicate the property name. to pass
+          //       as a page prop. this assumes that the custom app _already_ renders on route
+          //       change (I assume it does...)
           element.append(`<script id="resource" type="application/activity+json" data-pathname="${url.pathname}">${JSON.stringify(data)}</script>`, {
             html: true,
           });
