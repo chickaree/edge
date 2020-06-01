@@ -84,67 +84,82 @@ async function nextHandler({ event, request, url }) {
       const { title, og, schema } = getResourceMetadata(data);
 
       // eslint-disable-next-line no-undef
-      return (new HTMLRewriter()).on('head', {
-        element(element) {
-          // @TODO Maybe a data-route attribute should be added... then the next app could listen
-          //       for route changes query for all `head script[data-route]` elements. If the route
-          //       no longer matches, it could remove the element if it does still match it will
-          //       leave it, an id (or maybe data-prop ?) will indicate the property name. to pass
-          //       as a page prop. this assumes that the custom app _already_ renders on route
-          //       change (I assume it does...)
-          element.append(`<script id="resource" type="application/activity+json" data-pathname="${url.pathname}">${JSON.stringify(data)}</script>`, {
-            html: true,
-          });
-        },
-      })
-        .on('script[type="application/ld+json"]', {
+      const rewritter = new HTMLRewriter();
+
+      if (data) {
+        rewritter.on('head', {
+          element(element) {
+            // @TODO Maybe a data-route attribute should be added... then the next app could listen
+            //       for route changes query for all `head script[data-route]` elements. If the route
+            //       no longer matches, it could remove the element if it does still match it will
+            //       leave it, an id (or maybe data-prop ?) will indicate the property name. to pass
+            //       as a page prop. this assumes that the custom app _already_ renders on route
+            //       change (I assume it does...)
+            element.append(`<script id="resource" type="application/activity+json" data-pathname="${url.pathname}">${JSON.stringify(data)}</script>`, {
+              html: true,
+            });
+          },
+        });
+      }
+
+      if (schema) {
+        rewritter.on('script[type="application/ld+json"]', {
           element(element) {
             element.setInnerContent(JSON.stringify(schema));
           },
-        })
-        .on('title', {
+        });
+      }
+
+      if (title) {
+        rewritter.on('title', {
           element(element) {
-            if (title) {
-              element.setInnerContent(title);
-            }
+            element.setInnerContent(title);
           },
-        })
-        .on('meta[property="og:title"]', {
+        });
+      }
+
+      if (og.title) {
+        rewritter.on('meta[property="og:title"]', {
           element(element) {
-            if (og.title) {
-              element.setAttribute('content', og.title);
-            }
+            element.setAttribute('content', og.title);
           },
-        })
-        .on('meta[property="og:description"]', {
+        });
+      }
+
+      if (og.description) {
+        rewritter.on('meta[property="og:description"]', {
           element(element) {
-            if (og.description) {
-              element.setAttribute('content', og.description);
-            }
+            element.setAttribute('content', og.description);
           },
-        })
-        .on('meta[property="og:image"]', {
+        });
+      }
+
+      if (og.image) {
+        rewritter.on('meta[property="og:image"]', {
           element(element) {
-            if (og.image) {
-              element.setAttribute('content', og.image);
-            }
+            element.setAttribute('content', og.image);
           },
-        })
-        .on('meta[property="og:type"]', {
+        });
+      }
+
+      if (og.type) {
+        rewritter.on('meta[property="og:type"]', {
           element(element) {
-            if (og.type) {
-              element.setAttribute('content', og.type);
-            }
+            element.setAttribute('content', og.type);
           },
-        })
-        .on('meta[property="og:url"]', {
+        });
+      }
+
+      if (og.url) {
+        rewritter.on('meta[property="og:url"]', {
           element(element) {
-            if (og.url) {
-              element.setAttribute('content', og.url);
-            }
+            element.setAttribute('content', og.url);
           },
-        })
-        .transform(asset);
+        });
+      }
+
+
+      return rewritter.transform(asset);
     }
   }
 
