@@ -9,7 +9,7 @@
     "test": "eslint --ignore-path .gitignore ."
   },
   "devDependencies": {
-    "@cloudflare/wrangler": "^1.9.0",
+    "@cloudflare/wrangler": "^1.9.2",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-plugin-import": "^2.20.1",

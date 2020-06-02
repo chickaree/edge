@@ -11,7 +11,8 @@ const router = new Router();
 router.get('/:domain/:hash', getResource);
 router.get('/:domain', getResource);
 
-async function nextHandler({ event, request, url }) {
+async function getAssetWithMetadata(event, request, url) {
+  const cache = caches.default;
   const asset = await getAsset(event, routesManifest);
 
   if (asset.headers.has('Content-Location')) {
@@ -90,11 +91,11 @@ async function nextHandler({ event, request, url }) {
         rewritter.on('head', {
           element(element) {
             // @TODO Maybe a data-route attribute should be added... then the next app could listen
-            //       for route changes query for all `head script[data-route]` elements. If the route
-            //       no longer matches, it could remove the element if it does still match it will
-            //       leave it, an id (or maybe data-prop ?) will indicate the property name. to pass
-            //       as a page prop. this assumes that the custom app _already_ renders on route
-            //       change (I assume it does...)
+            //       for route changes query for all `head script[data-route]` elements. If the
+            //       route no longer matches, it could remove the element if it does still match it
+            //       will leave it, an id (or maybe data-prop ?) will indicate the property name. to
+            //       pass as a page prop. this assumes that the custom app _already_ renders on
+            //       route change (I assume it does...)
             element.append(`<script id="resource" type="application/activity+json" data-pathname="${url.pathname}">${JSON.stringify(data)}</script>`, {
               html: true,
             });
@@ -158,12 +159,28 @@ async function nextHandler({ event, request, url }) {
         });
       }
 
+      const transformed = rewritter.transform(asset);
+      cache.put(request, transformed.clone());
 
-      return rewritter.transform(asset);
+      return transformed;
     }
   }
 
   return asset;
+}
+
+async function nextHandler({ event, request, url }) {
+  const cache = caches.default;
+
+  const response = await cache.match(request);
+
+  // If the response was in the cache, respond with that, but updated in the background.
+  if (response) {
+    event.waitUntil(getAssetWithMetadata(event, request, url));
+    return response;
+  }
+
+  return getAssetWithMetadata(event, request, url);
 }
 
 export default nextHandler;
