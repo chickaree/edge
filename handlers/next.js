@@ -11,7 +11,7 @@ const router = new Router();
 router.get('/:domain/:hash', getResource);
 router.get('/:domain', getResource);
 
-async function getAssetWithMetadata(event, request, url) {
+async function getAssetWithMetadata({ event, request, url }) {
   const cache = caches.default;
   const asset = await getAsset(event, routesManifest);
 
@@ -21,7 +21,8 @@ async function getAssetWithMetadata(event, request, url) {
     if (location.pathname === '/[...resource].html') {
       // @TODO implement stale-on-revalidate on production.
 
-      const { handlerPromise } = router.handleRequest(request);
+      const { match, handlerPromise } = router.handleRequest(request);
+      const { params } = match;
       const response = await handlerPromise;
 
       if (response.headers.has('Location')) {
@@ -96,7 +97,8 @@ async function getAssetWithMetadata(event, request, url) {
             //       will leave it, an id (or maybe data-prop ?) will indicate the property name. to
             //       pass as a page prop. this assumes that the custom app _already_ renders on
             //       route change (I assume it does...)
-            element.append(`<script id="resource" type="application/activity+json" data-pathname="${url.pathname}">${JSON.stringify(data)}</script>`, {
+            const html = `<script id="resource" type="application/activity+json" data-domain="${params.domain || ''}" data-hash="${params.hash || ''}">${JSON.stringify(data)}</script>`;
+            element.append(html, {
               html: true,
             });
           },
@@ -169,18 +171,19 @@ async function getAssetWithMetadata(event, request, url) {
   return asset;
 }
 
-async function nextHandler({ event, request, url }) {
+async function nextHandler(context) {
+  const { event, request } = context;
   const cache = caches.default;
 
   const response = await cache.match(request);
 
   // If the response was in the cache, respond with that, but updated in the background.
   if (response) {
-    event.waitUntil(getAssetWithMetadata(event, request, url));
+    event.waitUntil(getAssetWithMetadata(context));
     return response;
   }
 
-  return getAssetWithMetadata(event, request, url);
+  return getAssetWithMetadata(context);
 }
 
 export default nextHandler;
