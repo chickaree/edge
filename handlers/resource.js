@@ -74,8 +74,10 @@ async function getResource({
     });
   }
 
+  const mimeType = response.headers.get('Content-Type').split(';').shift().trim();
+
   // Remove headers from the repsonse (especially Set-Cookie).
-  return new Response(response.body, {
+  const resource = new Response(response.body, {
     ...response,
     headers: {
       'Access-Control-Allow-Origin': '*',
@@ -83,6 +85,21 @@ async function getResource({
       'Content-Type': response.headers.get('Content-Type'),
     },
   });
+
+  // If the resource is HTML, remove the body.
+  if (mimeType === 'text/html') {
+    // eslint-disable-next-line no-undef
+    const rewritter = new HTMLRewriter();
+    rewritter.on('body', {
+      element(element) {
+        element.setInnerContent('');
+      },
+    });
+
+    return rewritter.transform(resource);
+  }
+
+  return resource;
 }
 
 export default getResource;

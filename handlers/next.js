@@ -47,28 +47,14 @@ async function getAssetWithMetadata({ event, request, url }) {
       if (mimeType === 'application/json') {
         data = await getResponseDataJson(response.headers.get('Content-Location'), await response.json());
       } else {
-        let resourceResponse;
-
-        // Remove the body from the HTML page.
-        if (mimeType === 'text/html') {
-          // eslint-disable-next-line no-undef
-          resourceResponse = (new HTMLRewriter()).on('body', {
-            element(element) {
-              element.setInnerContent('');
-            },
-          }).transform(response);
-        } else {
-          resourceResponse = response;
-        }
-
         const parseURL = new URL(`/api/parse${url.pathname}`, url);
 
         const parsedResponse = await fetch(parseURL.toString(), {
           method: 'POST',
           headers: {
-            'Content-Type': resourceResponse.headers.get('Content-Type'),
+            'Content-Type': response.headers.get('Content-Type'),
           },
-          body: resourceResponse.body,
+          body: response.body,
         });
 
         if (!parsedResponse.ok) {

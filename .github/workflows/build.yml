@@ -17,4 +17,10 @@ jobs:
         uses: cloudflare/wrangler-action@1.1.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
+      - run: >-
+        curl -f -X POST
+        --url https://api.cloudflare.com/client/v4/zones/ed5594d679827145d1d47a063b1dffdsf23a22/purge_cache
+        --header 'authorization: Bearer ${{ secrets.CF_API_TOKEN }}'
+        --header 'Content-Type: application/json'
+        --data '{"purge_everything":true}'
 
