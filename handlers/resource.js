@@ -16,7 +16,6 @@ async function getResource({
     redirect: 'manual',
     headers: {
       Referer: request.headers.get('Referer'),
-      Origin: request.headers.get('Origin'),
       'User-Agent': request.headers.get('User-Agent'),
       Accept: request.headers.get('Accept'),
       'Accept-Encoding': request.headers.get('Accept-Encoding'),
@@ -32,12 +31,6 @@ async function getResource({
   try {
     response = await fetch(url.toString(), options);
   } catch (e) {
-    // Try again with http.
-    url.protocol = 'http:';
-    response = await fetch(url.toString(), options);
-  }
-
-  if (!response.ok && !response.headers.has('Location')) {
     // Try again with http.
     url.protocol = 'http:';
     response = await fetch(url.toString(), options);
