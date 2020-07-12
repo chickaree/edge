@@ -26,7 +26,6 @@ async function getResource({
     },
   };
 
-  // Forward a white list of headers (Do not forward Cookie)
   let response;
   try {
     response = await fetch(url.toString(), options);
@@ -36,8 +35,9 @@ async function getResource({
     response = await fetch(url.toString(), options);
   }
 
+
   // Redirect?
-  if (response.status >= 301 && response.status <= 308 && response.headers.has('Location')) {
+  if (response.status >= 300 && response.status <= 308 && response.headers.has('Location')) {
     const requestURL = new URL(request.url);
     const redirectURL = new URL(response.headers.get('Location'), response.url);
     const redirectPath = redirectURL.href.substr(redirectURL.origin.length);
