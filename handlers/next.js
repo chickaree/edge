@@ -19,8 +19,6 @@ async function getAssetWithMetadata({ event, request, url }) {
     const location = new URL(asset.headers.get('Content-Location'), url);
 
     if (location.pathname === '/[...resource].html') {
-      // @TODO implement stale-on-revalidate on production.
-
       const { match, handlerPromise } = router.handleRequest(request);
       const { params } = match;
       const response = await handlerPromise;
@@ -69,7 +67,9 @@ async function getAssetWithMetadata({ event, request, url }) {
         return asset;
       }
 
-      const { title, og, schema } = getResourceMetadata(data);
+      const {
+        title, robots, og, schema,
+      } = getResourceMetadata(data);
 
       // eslint-disable-next-line no-undef
       const rewritter = new HTMLRewriter();
@@ -137,6 +137,14 @@ async function getAssetWithMetadata({ event, request, url }) {
         rewritter.on('meta[property="og:url"]', {
           element(element) {
             element.setAttribute('content', og.url);
+          },
+        });
+      }
+
+      if (robots) {
+        rewritter.on('meta[name="robots"]', {
+          element(element) {
+            element.setAttribute('content', robots);
           },
         });
       }
