@@ -4,6 +4,10 @@ account_id = "2659099e440328a773821e7db5363a84"
 zone_id = "ed5594d679827145d1d47a063b123a22"
 route = "chickar.ee/*"
 
+kv_namespaces = [
+	 { binding = "RESOURCE_DOMAINS", preview_id = "a389c512764740e2a7bd4d857052475a", id = "39ddadfbb29c40bcb1f70ebbf6e63ec5" }
+]
+
 [site]
 bucket = "./node_modules/@chickaree/web/html"
 entry-point = ""

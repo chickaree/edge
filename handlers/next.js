@@ -11,6 +11,18 @@ const router = new Router();
 router.get('/:domain/:hash', getResource);
 router.get('/:domain', getResource);
 
+async function recordDomain(domain) {
+  const value = await RESOURCE_DOMAINS.get(domain);
+
+  if (value === null) {
+    await RESOURCE_DOMAINS.put(domain, domain, {
+      metadata: {
+        created: (new Date()).toISOString(),
+      },
+    });
+  }
+}
+
 async function getAssetWithMetadata({ event, request, url }) {
   const cache = caches.default;
   const asset = await getAsset(event, routesManifest);
@@ -40,6 +52,10 @@ async function getAssetWithMetadata({ event, request, url }) {
       if (!MIME_TYPES.includes(mimeType)) {
         return asset;
       }
+
+      const { hostname } = new URL(`https://${params.domain}`);
+
+      event.waitUntil(recordDomain(hostname));
 
       let data;
       if (mimeType === 'application/json') {
@@ -77,7 +93,7 @@ async function getAssetWithMetadata({ event, request, url }) {
       if (data) {
         rewritter.on('head', {
           element(element) {
-            const html = `<script id="resource" type="application/activity+json" data-domain="${params.domain || ''}" data-hash="${params.hash || ''}">${JSON.stringify(data)}</script>`;
+            const html = `<script id="resource" type="application/activity+json" data-domain="${hostname}" data-hash="${params.hash || ''}">${JSON.stringify(data)}</script>`;
             element.append(html, {
               html: true,
             });

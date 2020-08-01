@@ -3,6 +3,9 @@
     "env": {
         "serviceworker": true
     },
+    "globals": {
+      "RESOURCE_DOMAINS": "readonly"
+    },
     "rules": {
         "react/react-in-jsx-scope": "off",
         "react/jsx-filename-extension": "off",
