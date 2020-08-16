@@ -29,12 +29,19 @@ async function getResource({
   let response;
   try {
     response = await fetch(url.toString(), options);
+
+    // TLS failure.
+    // @see https://support.cloudflare.com/hc/en-us/articles/115003011431-Troubleshooting-Cloudflare-5XX-errors#525error
+    if (response.status === 525 || response.status === 526) {
+      // Try again with http.
+      url.protocol = 'http:';
+      response = await fetch(url.toString(), options);
+    }
   } catch (e) {
     // Try again with http.
     url.protocol = 'http:';
     response = await fetch(url.toString(), options);
   }
-
 
   // Redirect?
   if (response.status >= 300 && response.status <= 308 && response.headers.has('Location')) {
