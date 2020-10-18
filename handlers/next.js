@@ -49,7 +49,7 @@ async function getAssetWithMetadata({ event, request, url }) {
 
       const mimeType = response.headers.get('Content-Type').split(';').shift().trim();
 
-      if (!MIME_TYPES.includes(mimeType)) {
+      if (!MIME_TYPES.has(mimeType)) {
         return asset;
       }
 
