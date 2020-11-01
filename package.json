@@ -17,7 +17,7 @@
     "eslint-plugin-react": "^7.19.0"
   },
   "dependencies": {
-    "@chickaree/web": "^2.11.0",
+    "@chickaree/web": "^2.11.1",
     "@cinematix/next-cloudflare": "^1.1.3",
     "base64url": "^3.0.1",
     "service-worker-router": "^1.7.5",
