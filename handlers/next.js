@@ -5,6 +5,8 @@ import {
 } from '@chickaree/web';
 import getResource from './resource';
 
+const JSON_TYPES = new Set(['application/feed+json', 'application/json']);
+
 // Instantiate a new router for sub requests.
 const router = new Router();
 
@@ -58,7 +60,7 @@ async function getAssetWithMetadata({ event, request, url }) {
       event.waitUntil(recordDomain(hostname));
 
       let data;
-      if (mimeType === 'application/json') {
+      if (JSON_TYPES.has(mimeType)) {
         data = await getResponseDataJson(response.headers.get('Content-Location'), await response.json());
       } else {
         const parseURL = new URL(`/api/parse${url.pathname}`, url);
